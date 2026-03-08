@@ -1,0 +1,46 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SearchBar from '../components/SearchBar';
+import { getCollection } from 'astro:content';
+
+const jobs = await getCollection('jobs');
+---
+
+<Layout title="JobBoard - Find your next opportunity">
+  <div class="bg-indigo-700 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+      <h1 class="text-5xl font-extrabold tracking-tight mb-4">
+        Discover Your Next Big Career Move
+      </h1>
+      <p class="text-xl text-indigo-100 max-w-2xl mx-auto">
+        Search thousands of jobs from real companies. Fast, direct, and hybrid powered for the best results.
+      </p>
+
+      {/* The SearchBar Island */}
+      <SearchBar client:load />
+
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <h2 class="text-3xl font-bold text-gray-900 mb-8">Latest Static Jobs</h2>
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {jobs.map(job => (
+        <a href={`/jobs/${job.slug}`} class="block group">
+          <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-xl transition duration-300">
+            <h3 class="text-xl font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+              {job.data.title}
+            </h3>
+            <p class="text-gray-500 mt-2">{job.data.company}</p>
+            <div class="mt-4 flex items-center text-sm text-gray-500 space-x-4">
+              <span class="flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                {job.data.location}
+              </span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</Layout>

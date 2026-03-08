@@ -1,0 +1,40 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Astro Job Seeking Platform" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+    <header class="bg-white shadow-sm border-b">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <a href="/" class="text-2xl font-bold text-indigo-600">JobBoard</a>
+        <nav class="space-x-4">
+          <a href="/jobs" class="text-gray-600 hover:text-gray-900 transition-colors">Jobs</a>
+          <a href="/login" class="text-gray-600 hover:text-gray-900 transition-colors">Login</a>
+        </nav>
+      </div>
+    </header>
+		<main class="flex-grow">
+			<slot />
+		</main>
+    <footer class="bg-white border-t mt-auto">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-gray-500">
+        &copy; {new Date().getFullYear()} JobBoard. All rights reserved.
+      </div>
+    </footer>
+	</body>
+</html>
