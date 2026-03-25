@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { getLangFromUrl, useTranslations } from '../i18n/ui';
+import ChatWidget from '../components/ChatWidget';
 
 interface Props {
 	title: string;
@@ -57,6 +58,8 @@ const t = useTranslations(lang);
     <main class="flex-grow">
       <slot />
     </main>
+
+    <ChatWidget lang={lang} client:load />
 
     <footer class="bg-uapa-blue text-gray-300 border-t-4 border-uapa-sand mt-auto">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center">

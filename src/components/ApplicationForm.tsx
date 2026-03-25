@@ -14,13 +14,18 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
 
+  const [userProfile, setUserProfile] = useState<any>(null);
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-        if (profile) setUserRole(profile.role);
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        if (profile) {
+          setUserRole(profile.role);
+          setUserProfile(profile);
+        }
       }
       setIsCheckingAuth(false);
     };
@@ -99,6 +104,7 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
           type="text" 
           required 
           minLength={2}
+          defaultValue={userProfile?.full_name || ''}
           className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-uapa-orange focus:border-transparent outline-none transition"
           placeholder="Jane Doe"
         />
@@ -111,7 +117,9 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
           name="applicantEmail"
           type="email" 
           required 
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-uapa-orange focus:border-transparent outline-none transition"
+          defaultValue={user?.email || ''}
+          readOnly
+          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-uapa-orange focus:border-transparent outline-none transition bg-gray-50 text-gray-500 cursor-not-allowed"
           placeholder="jane@example.com"
         />
       </div>
