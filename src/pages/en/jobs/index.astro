@@ -1,0 +1,21 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import GlobalJobSearch from '../../../components/GlobalJobSearch';
+import { getLangFromUrl, useTranslations } from '../../../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Layout title={`Search Jobs - Uapa Empleos`}>
+  <div class="bg-uapa-blue/5 border-b-2 border-uapa-blue/10 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-4xl font-extrabold text-uapa-blue mb-4">Discover Your Next Job</h1>
+      <p class="text-xl text-gray-600 font-medium">Filter thousands of opportunities by modality, location, and more.</p>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+    <GlobalJobSearch lang={lang} client:load />
+  </div>
+</Layout>

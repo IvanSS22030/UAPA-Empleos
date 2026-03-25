@@ -13,3 +13,9 @@
 - **LoginForm Update:** Added an `isResettingPassword` state in `LoginForm.tsx` that changes the form to only ask for the email. Clicking the submit button now calls `supabase.auth.resetPasswordForEmail()` which sends the recovery link via email.
 - **Translations:** Added new keys to `ui.ts` for English and Spanish to handle the forgot password UI strings.
 - **Update Password Page (`/update-password`):** Built new Astro routes (`src/pages/update-password.astro` and `src/pages/en/update-password.astro`) pointing to a new React component `UpdatePasswordForm.tsx`. This component allows users arriving from a Supabase recovery email link to securely input their new password.
+
+## Feature Addition: Global Jobs Search & Filters
+- **New Page Routes (`/jobs`):** Created `src/pages/jobs/index.astro` and `src/pages/en/jobs/index.astro` with a beautifully styled hero section matching the UAPA university brand (Deep Cove Blue).
+- **GlobalJobSearch Component:** Developed a new React component at `src/components/GlobalJobSearch.tsx` that simultaneously fetches static jobs from Pagefind and live jobs from Supabase. It deduplicates URLs, maps fields, and infers job 'modality' or 'internship' status dynamically.
+- **Advanced Filters:** Added a comprehensive sidebar for dynamic client-side filtering by "Remoto/Híbrido/Presencial", "Pasantía", general text query, and location text search.
+- **Translations:** Added the translation keys for the job filters in `ui.ts`.
