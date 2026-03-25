@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SignupForm from '../components/SignupForm';
+import { getLangFromUrl, useTranslations } from '../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Layout title={`${t('nav.signup')} - Uapa Empleos`}>
+  <div class="min-h-[80vh] py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-full">
+      <SignupForm lang={lang} client:load />
+    </div>
+  </div>
+</Layout>

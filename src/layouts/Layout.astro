@@ -1,40 +1,57 @@
 ---
 import '../styles/global.css';
+import { getLangFromUrl, useTranslations } from '../i18n/ui';
 
 interface Props {
 	title: string;
 }
 
 const { title } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="description" content="Astro Job Seeking Platform" />
+		<meta name="description" content="Uapa Empleos Platform" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
-    <header class="bg-white shadow-sm border-b">
+  <body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+    {/* Official Navy Blue Header */}
+    <header class="bg-uapa-blue shadow-md border-b-4 border-uapa-orange">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <a href="/" class="text-2xl font-bold text-indigo-600">JobBoard</a>
-        <nav class="space-x-4">
-          <a href="/jobs" class="text-gray-600 hover:text-gray-900 transition-colors">Jobs</a>
-          <a href="/login" class="text-gray-600 hover:text-gray-900 transition-colors">Login</a>
+        
+        {/* Official UAPA Logo (White version for dark background) */}
+        <a href={lang === 'es' ? '/' : `/${lang}/`} class="flex items-center">
+          <img 
+            src="https://www.uapa.edu.do/wp-content/uploads/2022/06/Logo-blanco-UAPA.png" 
+            alt="UAPA Logo" 
+            class="h-12 w-auto object-contain"
+            onError="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Logo_UAPA.png/320px-Logo_UAPA.png';"
+          />
+        </a>
+
+        <nav class="space-x-4 font-medium flex items-center">
+          <a href={lang === 'es' ? '/jobs' : `/${lang}/jobs`} class="text-white hover:text-uapa-orange transition-colors">{t('nav.jobs')}</a>
+          <a href={lang === 'es' ? '/login' : `/${lang}/login`} class="text-white hover:text-uapa-orange transition-colors">{t('nav.login')}</a>
+          <a href={lang === 'es' ? '/signup' : `/${lang}/signup`} class="px-5 py-2.5 bg-uapa-orange text-white rounded-lg hover:bg-orange-600 shadow-sm transition-all ml-2">{t('nav.signup')}</a>
         </nav>
       </div>
     </header>
-		<main class="flex-grow">
-			<slot />
-		</main>
-    <footer class="bg-white border-t mt-auto">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-gray-500">
-        &copy; {new Date().getFullYear()} JobBoard. All rights reserved.
+
+    <main class="flex-grow">
+      <slot />
+    </main>
+
+    <footer class="bg-uapa-blue text-gray-300 border-t-4 border-uapa-sand mt-auto">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center">
+        &copy; {new Date().getFullYear()} {t('footer.rights')}
       </div>
     </footer>
-	</body>
+  </body>
 </html>

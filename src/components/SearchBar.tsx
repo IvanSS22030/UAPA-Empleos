@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useTranslations, ui } from '../i18n/ui';
 
 interface JobResult {
   id: string;
@@ -9,7 +10,12 @@ interface JobResult {
   source: 'pagefind' | 'supabase';
 }
 
-export default function SearchBar() {
+interface SearchBarProps {
+  lang: keyof typeof ui;
+}
+
+export default function SearchBar({ lang }: SearchBarProps) {
+  const t = useTranslations(lang);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<JobResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -54,7 +60,7 @@ export default function SearchBar() {
             id: d.url,
             title: d.meta.title || 'Untitled',
             company: d.filters?.company?.[0] || 'Unknown Company',
-            url: d.url,
+            url: lang === 'es' ? d.url : `/${lang}${d.url}`,
             source: 'pagefind' as const
           };
         });
@@ -63,7 +69,6 @@ export default function SearchBar() {
       }
 
       // 2. Real-time Database Search via Supabase (For fresh jobs not yet statically indexed)
-      // Convert query for full text search (e.g., "junior dev" -> "junior | dev" or similar based on preference)
       const { data: sbData, error } = await supabase
         .from('jobs')
         .select('id, title, company')
@@ -75,10 +80,9 @@ export default function SearchBar() {
             id: r.id,
             title: r.title,
             company: r.company,
-            url: `/jobs/${r.id}`, // the dynamic SSR route for live jobs
+            url: lang === 'es' ? `/jobs/${r.id}` : `/${lang}/jobs/${r.id}`, // the dynamic SSR route for live jobs
             source: 'supabase' as const
           }))
-          // Deduplicate if the live job somehow matches a static url pattern (though UUIDs shouldn't clash with slugs)
           .filter(r => !seenUrls.has(r.url));
           
         combinedResults = [...combinedResults, ...sbResults];
@@ -101,20 +105,20 @@ export default function SearchBar() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for Junior Developer, React, Remote..."
-          className="flex-grow p-4 text-lg border-2 border-indigo-100 rounded-xl focus:outline-none focus:border-indigo-500 shadow-sm transition-colors"
+          placeholder={t('search.placeholder')}
+          className="flex-grow p-4 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:border-uapa-orange focus:ring-4 focus:ring-uapa-orange/20 shadow-sm text-gray-900 transition-all font-medium"
         />
         <button 
           type="submit" 
           disabled={isSearching}
-          className="px-8 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition"
+          className="px-8 py-4 bg-uapa-orange text-white font-black uppercase tracking-wide rounded-xl hover:bg-orange-600 shadow-md transition disabled:opacity-50"
         >
-          {isSearching ? 'Searching...' : 'Search'}
+          {isSearching ? t('search.searching') : t('search.button')}
         </button>
       </form>
 
       {results.length > 0 && (
-        <div className="mt-6 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden">
+        <div className="mt-6 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden text-left">
           <ul className="divide-y divide-gray-100">
             {results.map(job => (
               <li key={job.id} className="hover:bg-gray-50 transition-colors">
@@ -124,8 +128,8 @@ export default function SearchBar() {
                       <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
                       <p className="text-gray-500 mt-1">{job.company}</p>
                     </div>
-                    <span className={`text-xs px-3 py-1 rounded-full ${job.source === 'pagefind' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                      {job.source === 'pagefind' ? 'Static (Fast)' : 'Live (DB)'}
+                    <span className={`text-xs px-3 py-1 rounded-full font-semibold ${job.source === 'pagefind' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                      {job.source === 'pagefind' ? t('search.source.static') : t('search.source.live')}
                     </span>
                   </div>
                 </a>
@@ -137,7 +141,7 @@ export default function SearchBar() {
       
       {query && !isSearching && results.length === 0 && (
         <div className="mt-6 p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100">
-          <p className="text-gray-500">No jobs found for "{query}". Try adjusting your search.</p>
+          <p className="text-gray-500">{t('search.no_results', { query })}</p>
         </div>
       )}
     </div>

@@ -1,0 +1,81 @@
+export const languages = {
+  es: 'Español',
+  en: 'English',
+};
+
+export const defaultLang = 'es';
+
+export const ui = {
+  es: {
+    'nav.jobs': 'Empleos',
+    'nav.login': 'Iniciar Sesión',
+    'nav.signup': 'Registrarse',
+    'hero.title': 'Descubre tu próximo gran paso profesional',
+    'hero.subtitle': 'Busca miles de empleos en empresas reales. Rápido, directo y con búsquedas combinadas para obtener los mejores resultados.',
+    'search.placeholder': 'Busca Desarrollador Junior, React, Remoto...',
+    'search.button': 'Buscar',
+    'search.searching': 'Buscando...',
+    'search.no_results': 'No se encontraron empleos para "{query}". Intenta ajustar tu búsqueda.',
+    'search.source.static': 'Estático (Rápido)',
+    'search.source.live': 'En Vivo (BD)',
+    'jobs.latest': 'Últimos Empleos Estáticos',
+    'footer.rights': 'Uapa Empleos. Todos los derechos reservados.',
+    'app.apply_ready': '¿Listo para aplicar?',
+    'app.apply_desc': 'Completa el formulario de solicitud a continuación. Tu currículum se subirá de forma segura.',
+    'auth.email': 'Correo Electrónico',
+    'auth.password': 'Contraseña',
+    'auth.fullName': 'Nombre Completo',
+    'auth.role': 'Soy un...',
+    'auth.role.talent': 'Talento (Busco empleo)',
+    'auth.role.recruiter': 'Reclutador (Ofrezco empleo)',
+    'auth.signup_button': 'Crear Cuenta',
+    'auth.login_button': 'Iniciar Sesión',
+    'auth.have_account': '¿Ya tienes una cuenta? Inicia sesión',
+    'auth.no_account': '¿No tienes cuenta? Regístrate',
+  },
+  en: {
+    'nav.jobs': 'Jobs',
+    'nav.login': 'Login',
+    'nav.signup': 'Sign Up',
+    'hero.title': 'Discover Your Next Big Career Move',
+    'hero.subtitle': 'Search thousands of jobs from real companies. Fast, direct, and hybrid powered for the best results.',
+    'search.placeholder': 'Search for Junior Developer, React, Remote...',
+    'search.button': 'Search',
+    'search.searching': 'Searching...',
+    'search.no_results': 'No jobs found for "{query}". Try adjusting your search.',
+    'search.source.static': 'Static (Fast)',
+    'search.source.live': 'Live (DB)',
+    'jobs.latest': 'Latest Static Jobs',
+    'footer.rights': 'Uapa Empleos. All rights reserved.',
+    'app.apply_ready': 'Ready to Apply?',
+    'app.apply_desc': 'Complete the application form below. Your resume will be securely uploaded.',
+    'auth.email': 'Email Address',
+    'auth.password': 'Password',
+    'auth.fullName': 'Full Name',
+    'auth.role': 'I am a...',
+    'auth.role.talent': 'Talent (Looking for jobs)',
+    'auth.role.recruiter': 'Recruiter (Hiring talent)',
+    'auth.signup_button': 'Create Account',
+    'auth.login_button': 'Log In',
+    'auth.have_account': 'Already have an account? Log in',
+    'auth.no_account': 'Don\'t have an account? Sign up',
+  },
+} as const;
+
+export function getLangFromUrl(url: URL) {
+  const [, lang] = url.pathname.split('/');
+  if (lang in ui) return lang as keyof typeof ui;
+  return defaultLang;
+}
+
+export function useTranslations(lang: keyof typeof ui) {
+  return function t(key: keyof typeof ui[typeof defaultLang], ...args: { [key: string]: string }[]): string {
+    let str: string = ui[lang][key] || ui[defaultLang][key];
+    if (args && args.length > 0 && args[0]) {
+      Object.entries(args[0]).forEach(([k, v]) => {
+        str = str.replace(`{${k}}`, v);
+      });
+    }
+    return str;
+  }
+}

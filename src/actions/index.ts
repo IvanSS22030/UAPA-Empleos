@@ -7,9 +7,35 @@ import { createClient } from '@supabase/supabase-js';
 // The user provided PUBLIC_SUPABASE_ANON_KEY.
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL;
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || process.env.PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceRole = import.meta.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl!, supabaseKey!);
+// Service role client bypasses RLS
+const supabaseAdmin = createClient(supabaseUrl!, supabaseServiceRole!);
 
 export const server = {
+  createProfile: defineAction({
+    input: z.object({
+      id: z.string().uuid(),
+      role: z.enum(['talent', 'recruiter']),
+      fullName: z.string()
+    }),
+    handler: async (input) => {
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .insert([
+          {
+            id: input.id,
+            role: input.role,
+            full_name: input.fullName
+          }
+        ]);
+        
+      if (profileError) {
+        throw new Error(profileError.message);
+      }
+      return { success: true };
+    }
+  }),
   applyToJob: defineAction({
     accept: 'form',
     input: z.object({

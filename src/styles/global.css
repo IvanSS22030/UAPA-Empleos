@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+@theme {
+  --color-uapa-blue: #041147;
+  --color-uapa-orange: #FD7E14;
+  --color-uapa-gold: #E8C598;
+  --color-uapa-sand: #E8C598;
+}

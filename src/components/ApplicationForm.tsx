@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { actions } from 'astro:actions';
 
 interface ApplicationFormProps {
@@ -8,7 +9,23 @@ interface ApplicationFormProps {
 export default function ApplicationForm({ jobId }: ApplicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<{ success: boolean; message?: string } | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+        if (profile) setUserRole(profile.role);
+      }
+      setIsCheckingAuth(false);
+    };
+    checkAuth();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,6 +66,23 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
     );
   }
 
+  if (isCheckingAuth) {
+    return <div className="text-center p-6 text-gray-500">Checking authorization...</div>;
+  }
+
+  if (!user || userRole !== 'talent') {
+    return (
+      <div className="bg-yellow-50 text-yellow-800 p-6 rounded-xl border border-yellow-200 text-center max-w-xl mx-auto">
+        <h3 className="text-xl font-bold mb-2">Authentication Required</h3>
+        <p>You must be logged in as a <strong>Job Hunter (Talent)</strong> to apply for this job.</p>
+        <div className="mt-4 flex gap-4 justify-center">
+          <a href="/login" className="px-4 py-2 bg-yellow-600 text-white font-semibold rounded hover:bg-yellow-700 transition">Log In</a>
+          <a href="/signup" className="px-4 py-2 bg-yellow-100 text-yellow-800 font-semibold rounded border border-yellow-300 hover:bg-yellow-200 transition">Sign Up</a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="max-w-xl mx-auto text-left flex flex-col gap-5">
       {submitResult && !submitResult.success && (
@@ -65,7 +99,7 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
           type="text" 
           required 
           minLength={2}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition"
+          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-uapa-orange focus:border-transparent outline-none transition"
           placeholder="Jane Doe"
         />
       </div>
@@ -77,7 +111,7 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
           name="applicantEmail"
           type="email" 
           required 
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition"
+          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-uapa-orange focus:border-transparent outline-none transition"
           placeholder="jane@example.com"
         />
       </div>
@@ -90,7 +124,7 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
           type="file" 
           accept="application/pdf"
           required 
-          className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer outline-none transition"
+          className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-uapa-blue hover:file:bg-blue-100 cursor-pointer outline-none transition"
         />
         <p className="text-xs text-gray-500 mt-2">Only PDF files are allowed. Must be smaller than 5MB.</p>
       </div>
@@ -98,7 +132,7 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
       <button 
         type="submit" 
         disabled={isSubmitting}
-        className="mt-4 bg-indigo-600 text-white font-bold py-4 px-8 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+        className="mt-4 bg-uapa-blue text-white font-bold py-4 px-8 rounded-xl hover:bg-blue-900 shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
       >
         {isSubmitting ? (
           <>
