@@ -38,8 +38,18 @@ const t = useTranslations(lang);
 
         <nav class="space-x-4 font-medium flex items-center">
           <a href={lang === 'es' ? '/jobs' : `/${lang}/jobs`} class="text-white hover:text-uapa-orange transition-colors">{t('nav.jobs')}</a>
-          <a href={lang === 'es' ? '/login' : `/${lang}/login`} class="text-white hover:text-uapa-orange transition-colors">{t('nav.login')}</a>
-          <a href={lang === 'es' ? '/signup' : `/${lang}/signup`} class="px-5 py-2.5 bg-uapa-orange text-white rounded-lg hover:bg-orange-600 shadow-sm transition-all ml-2">{t('nav.signup')}</a>
+          
+          <div id="unauth-nav" class="space-x-4 flex items-center">
+            <a href={lang === 'es' ? '/login' : `/${lang}/login`} class="text-white hover:text-uapa-orange transition-colors">{t('nav.login')}</a>
+            <a href={lang === 'es' ? '/signup' : `/${lang}/signup`} class="px-5 py-2.5 bg-uapa-orange text-white rounded-lg hover:bg-orange-600 shadow-sm transition-all ml-2">{t('nav.signup')}</a>
+          </div>
+
+          <div id="auth-nav" class="hidden items-center space-x-4">
+            <span class="text-uapa-sand font-bold" id="user-name"></span>
+            <button id="logout-btn" class="text-white hover:text-red-400 text-sm transition-colors border border-transparent hover:border-red-400 rounded px-2 py-1">
+              {lang === 'es' ? 'Salir' : 'Sign out'}
+            </button>
+          </div>
         </nav>
       </div>
     </header>
@@ -53,5 +63,44 @@ const t = useTranslations(lang);
         &copy; {new Date().getFullYear()} {t('footer.rights')}
       </div>
     </footer>
+
+    <script>
+      import { supabase } from '../lib/supabase';
+
+      async function setupAuthUI() {
+        const unauthNav = document.getElementById('unauth-nav');
+        const authNav = document.getElementById('auth-nav');
+        const userNameEl = document.getElementById('user-name');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session && session.user) {
+          if (unauthNav) unauthNav.style.display = 'none';
+          if (authNav) {
+            authNav.classList.remove('hidden');
+            authNav.classList.add('flex');
+          }
+          
+          if (userNameEl) {
+            let name = session.user.user_metadata?.full_name;
+            if (!name) {
+              const { data } = await supabase.from('profiles').select('full_name').eq('id', session.user.id).single();
+              if (data) name = data.full_name;
+            }
+            userNameEl.textContent = name || session.user.email?.split('@')[0] || 'Usuario';
+          }
+        }
+
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.reload();
+          });
+        }
+      }
+
+      setupAuthUI();
+    </script>
   </body>
 </html>

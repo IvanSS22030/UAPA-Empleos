@@ -32,6 +32,12 @@ export const ui = {
     'auth.login_button': 'Iniciar Sesión',
     'auth.have_account': '¿Ya tienes una cuenta? Inicia sesión',
     'auth.no_account': '¿No tienes cuenta? Regístrate',
+    'auth.forgot_password': '¿Olvidaste tu contraseña?',
+    'auth.send_reset_link': 'Enviar enlace de recuperación',
+    'auth.back_to_login': 'Volver al inicio de sesión',
+    'auth.reset_password_title': 'Restablecer Contraseña',
+    'auth.new_password': 'Nueva Contraseña',
+    'auth.update_password_button': 'Actualizar Contraseña',
   },
   en: {
     'nav.jobs': 'Jobs',
@@ -59,6 +65,12 @@ export const ui = {
     'auth.login_button': 'Log In',
     'auth.have_account': 'Already have an account? Log in',
     'auth.no_account': 'Don\'t have an account? Sign up',
+    'auth.forgot_password': 'Forgot your password?',
+    'auth.send_reset_link': 'Send reset link',
+    'auth.back_to_login': 'Back to login',
+    'auth.reset_password_title': 'Reset Password',
+    'auth.new_password': 'New Password',
+    'auth.update_password_button': 'Update Password',
   },
 } as const;
 
