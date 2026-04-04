@@ -19,8 +19,13 @@ export default function ProfileEditor({ lang }: ProfileEditorProps) {
     bio: '',
     phone: '',
     location: '',
-    avatar_url: ''
+    avatar_url: '',
+    skills: [] as string[],
+    languages: [] as string[]
   });
+
+  const [newSkill, setNewSkill] = useState('');
+  const [newLanguage, setNewLanguage] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -41,7 +46,9 @@ export default function ProfileEditor({ lang }: ProfileEditorProps) {
             bio: data.bio || '',
             phone: data.phone || '',
             location: data.location || '',
-            avatar_url: data.avatar_url || ''
+            avatar_url: data.avatar_url || '',
+            skills: data.skills || [],
+            languages: data.languages || []
           });
         }
       } else {
@@ -55,6 +62,30 @@ export default function ProfileEditor({ lang }: ProfileEditorProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const addSkill = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) e.preventDefault();
+    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
+      setFormData({ ...formData, skills: [...formData.skills, newSkill.trim()] });
+      setNewSkill('');
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setFormData({ ...formData, skills: formData.skills.filter(s => s !== skillToRemove) });
+  };
+
+  const addLanguage = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) e.preventDefault();
+    if (newLanguage.trim() && !formData.languages.includes(newLanguage.trim())) {
+      setFormData({ ...formData, languages: [...formData.languages, newLanguage.trim()] });
+      setNewLanguage('');
+    }
+  };
+
+  const removeLanguage = (langToRemove: string) => {
+    setFormData({ ...formData, languages: formData.languages.filter(l => l !== langToRemove) });
   };
 
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +145,8 @@ export default function ProfileEditor({ lang }: ProfileEditorProps) {
           phone: formData.phone,
           location: formData.location,
           avatar_url: formData.avatar_url,
+          skills: formData.skills,
+          languages: formData.languages,
           updated_at: new Date()
         })
         .eq('id', session.user.id);
@@ -168,7 +201,8 @@ export default function ProfileEditor({ lang }: ProfileEditorProps) {
           </div>
         )}
 
-        <form onSubmit={updateProfile} className="space-y-6">
+        <form onSubmit={updateProfile} className="space-y-8">
+          {/* Main Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">{t('profile.full_name')}</label>
@@ -230,7 +264,74 @@ export default function ProfileEditor({ lang }: ProfileEditorProps) {
             ></textarea>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end">
+          {/* Skills and Languages (Upwork Style Cards) */}
+          <div className="pt-6 border-t border-gray-100 flex flex-col md:flex-row gap-8">
+            <div className="w-full md:w-1/2">
+               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                 Skills
+                 <span className="ml-2 text-xs bg-uapa-orange/10 text-uapa-orange px-2 py-1 rounded-full">{formData.skills.length}</span>
+               </h3>
+               
+               <div className="flex flex-wrap gap-2 mb-4">
+                 {formData.skills.map(skill => (
+                   <span key={skill} className="inline-flex items-center bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-sm font-medium border border-gray-200">
+                     {skill}
+                     <button type="button" onClick={() => removeSkill(skill)} className="ml-2 text-gray-400 hover:text-red-500 focus:outline-none">
+                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
+                     </button>
+                   </span>
+                 ))}
+               </div>
+
+               <div className="flex items-center gap-2">
+                 <input 
+                   type="text" 
+                   placeholder="Ej. React, Python"
+                   value={newSkill}
+                   onChange={e => setNewSkill(e.target.value)}
+                   onKeyDown={e => e.key === 'Enter' && addSkill(e)}
+                   className="flex-grow px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-uapa-orange outline-none transition"
+                 />
+                 <button type="button" onClick={addSkill} className="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition border border-green-200 flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                 </button>
+               </div>
+            </div>
+
+            <div className="w-full md:w-1/2">
+               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                 Languages
+                 <span className="ml-2 text-xs bg-uapa-orange/10 text-uapa-orange px-2 py-1 rounded-full">{formData.languages.length}</span>
+               </h3>
+               
+               <div className="flex flex-wrap gap-2 mb-4">
+                 {formData.languages.map(langStr => (
+                   <span key={langStr} className="inline-flex items-center bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-sm font-medium border border-gray-200">
+                     {langStr}
+                     <button type="button" onClick={() => removeLanguage(langStr)} className="ml-2 text-gray-400 hover:text-red-500 focus:outline-none">
+                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
+                     </button>
+                   </span>
+                 ))}
+               </div>
+
+               <div className="flex items-center gap-2">
+                 <input 
+                   type="text" 
+                   placeholder="Ej. Español (Nativo)"
+                   value={newLanguage}
+                   onChange={e => setNewLanguage(e.target.value)}
+                   onKeyDown={e => e.key === 'Enter' && addLanguage(e)}
+                   className="flex-grow px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-uapa-orange outline-none transition"
+                 />
+                 <button type="button" onClick={addLanguage} className="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition border border-green-200 flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                 </button>
+               </div>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-gray-100 flex justify-end">
              <button 
                 type="submit" 
                 disabled={saving || uploading}
@@ -244,3 +345,4 @@ export default function ProfileEditor({ lang }: ProfileEditorProps) {
     </div>
   );
 }
+

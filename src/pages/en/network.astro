@@ -1,0 +1,25 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PeopleSearch from '../../components/PeopleSearch';
+import { getLangFromUrl, useTranslations } from '../../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Layout title="Network - Uapa Empleos">
+  <div class="bg-white border-b-2 border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+      <h1 class="text-5xl font-black tracking-tight mb-4 text-uapa-blue">
+        Your Professional Network
+      </h1>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto font-medium">
+        Connect with other talents and find recruiters looking for your profile.
+      </p>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
+    <PeopleSearch client:load lang={lang} />
+  </div>
+</Layout>

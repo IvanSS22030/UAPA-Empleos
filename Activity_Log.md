@@ -26,3 +26,9 @@
 - **Job Application Auto-fill:** Updated `ApplicationForm.tsx` to query the `profiles` table upon load. Authenticaticated users will automatically have their 'Name' and 'Email' pre-filled seamlessly, accelerating their application process.
 - **LinkedIn-Style Chat Widget:** Created a dynamic `ChatWidget.tsx` React component anchored to the bottom-right of the screen globally via `Layout.astro`. It fetches ongoing conversations, displays profile avatars, and connects to Supabase Realtime to push and receive live messages without page reloads.
 - **Translations Update:** Added comprehensive localization strings for profile fields, avatar uploads, and chat interfaces.
+
+## Feature Addition: Netork, Profile Skills & Profile Applications
+- **Database Schema Upgrades:** Expanded `public.profiles` to include `skills` and `languages` arrays. Expanded `public.applications` to include `applicant_id`.
+- **Profile Editor Updates:** Added interactive Upwork-style cards for skills and language tags at the bottom of the user profile.
+- **PeopleSearch Component:** Created a dedicated Network people search that queries all recruiters and peers with filtering capabilities.
+- **Apply with Profile:** Updated `ApplicationForm.tsx` to include an "Apply with Profile" toggle. This enables a user with a complete profile to submit job applications without uploading a standalone PDF.

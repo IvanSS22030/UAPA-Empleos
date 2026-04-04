@@ -42,27 +42,32 @@ export const server = {
       jobId: z.string().uuid(),
       applicantName: z.string().min(2),
       applicantEmail: z.string().email(),
-      resume: z.instanceof(File),
+      profileId: z.string().uuid().optional(),
+      resume: z.instanceof(File).optional(),
     }),
     handler: async (input) => {
       try {
-        // 1. Upload Resume to Supabase Storage
-        const fileExt = input.resume.name.split('.').pop();
-        const fileName = `${crypto.randomUUID()}.${fileExt}`;
-        const filePath = `${input.jobId}/${fileName}`;
+        let resumeUrl = null;
 
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from('resumes')
-          .upload(filePath, input.resume, {
-            contentType: input.resume.type,
-            upsert: false
-          });
+        // 1. Upload Resume only if provided
+        if (input.resume && input.resume.size > 0 && input.resume.name) {
+          const fileExt = input.resume.name.split('.').pop();
+          const fileName = `${crypto.randomUUID()}.${fileExt}`;
+          const filePath = `${input.jobId}/${fileName}`;
 
-        if (storageError) {
-          throw new Error(`Resume upload failed: ${storageError.message}`);
+          const { data: storageData, error: storageError } = await supabase.storage
+            .from('resumes')
+            .upload(filePath, input.resume, {
+              contentType: input.resume.type,
+              upsert: false
+            });
+
+          if (storageError) {
+            throw new Error(`Resume upload failed: ${storageError.message}`);
+          }
+
+          resumeUrl = supabase.storage.from('resumes').getPublicUrl(filePath).data.publicUrl;
         }
-
-        const resumeUrl = supabase.storage.from('resumes').getPublicUrl(filePath).data.publicUrl;
 
         // 2. Create Application Record in Database
         const { data: appData, error: dbError } = await supabase
@@ -72,6 +77,7 @@ export const server = {
               job_id: input.jobId,
               applicant_name: input.applicantName,
               applicant_email: input.applicantEmail,
+              applicant_id: input.profileId || null,
               resume_url: resumeUrl,
               status: 'pending'
             }

@@ -15,6 +15,7 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [useProfileData, setUseProfileData] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -39,6 +40,17 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
 
     const formData = new FormData(e.currentTarget);
     formData.append('jobId', jobId);
+    
+    if (userProfile && useProfileData) {
+      formData.append('profileId', userProfile.id);
+    }
+
+    // Since resume is optional when using profile data, we should clean it from formData if it's empty
+    // so the action doesn't try to parse an empty file object as a required file
+    const resumeFile = formData.get('resume') as File;
+    if (!resumeFile || resumeFile.size === 0) {
+      formData.delete('resume');
+    }
 
     try {
       const { data, error } = await actions.applyToJob(formData);
@@ -97,7 +109,7 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
       )}
 
       <div>
-        <label htmlFor="applicantName" className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
+        <label htmlFor="applicantName" className="block text-sm font-semibold text-gray-700 mb-1">Full Name / Nombre Completo</label>
         <input 
           id="applicantName"
           name="applicantName"
@@ -106,12 +118,12 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
           minLength={2}
           defaultValue={userProfile?.full_name || ''}
           className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-uapa-orange focus:border-transparent outline-none transition"
-          placeholder="Jane Doe"
+          placeholder="Ej. Juan Pérez"
         />
       </div>
 
       <div>
-        <label htmlFor="applicantEmail" className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+        <label htmlFor="applicantEmail" className="block text-sm font-semibold text-gray-700 mb-1">Email / Correo Electrónico</label>
         <input 
           id="applicantEmail"
           name="applicantEmail"
@@ -120,21 +132,39 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
           defaultValue={user?.email || ''}
           readOnly
           className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-uapa-orange focus:border-transparent outline-none transition bg-gray-50 text-gray-500 cursor-not-allowed"
-          placeholder="jane@example.com"
         />
       </div>
 
+      <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-2">
+         <label className="flex items-start cursor-pointer">
+           <div className="flex items-center h-5">
+             <input 
+               type="checkbox" 
+               checked={useProfileData}
+               onChange={(e) => setUseProfileData(e.target.checked)}
+               className="w-5 h-5 rounded text-uapa-blue focus:ring-uapa-blue border-gray-300"
+             />
+           </div>
+           <div className="ml-3 text-sm">
+             <span className="font-bold text-uapa-blue block">Aplicar usando mi Perfil / Apply with Profile</span>
+             <p className="text-gray-600 mt-1">Los reclutadores podrán ver tus habilidades (Skills), idiomas y biografía directamente desde tu perfil de Uapa Empleos.</p>
+           </div>
+         </label>
+      </div>
+
       <div>
-        <label htmlFor="resume" className="block text-sm font-semibold text-gray-700 mb-1">Resume (PDF)</label>
+        <label htmlFor="resume" className="block text-sm font-semibold text-gray-700 mb-1">
+          {useProfileData ? 'Curriculum Adicional (Opcional) / Additional Resume' : 'Curriculum PDF (Required) / Resume'}
+        </label>
         <input 
           id="resume"
           name="resume"
           type="file" 
           accept="application/pdf"
-          required 
+          required={!useProfileData}
           className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-uapa-blue hover:file:bg-blue-100 cursor-pointer outline-none transition"
         />
-        <p className="text-xs text-gray-500 mt-2">Only PDF files are allowed. Must be smaller than 5MB.</p>
+        <p className="text-xs text-gray-500 mt-2">Solamente archivos PDF. Máximo 5MB.</p>
       </div>
 
       <button 
