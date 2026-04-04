@@ -4,9 +4,10 @@ import { actions } from 'astro:actions';
 
 interface ApplicationFormProps {
   jobId: string;
+  lang?: string;
 }
 
-export default function ApplicationForm({ jobId }: ApplicationFormProps) {
+export default function ApplicationForm({ jobId, lang = 'es' }: ApplicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<{ success: boolean; message?: string } | null>(null);
   const [user, setUser] = useState<any>(null);

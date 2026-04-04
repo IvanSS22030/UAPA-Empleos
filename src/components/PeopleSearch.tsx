@@ -49,6 +49,11 @@ export default function PeopleSearch({ lang }: PeopleSearchProps) {
 
   // Derived filtered people
   const filteredPeople = useMemo(() => {
+    // Hide all users if search query is empty (privacy & cleaner UI)
+    if (!query.trim() && !locationQuery.trim() && roleFilter === 'all') {
+      return [];
+    }
+
     return people.filter(p => {
       // 1. Keyword search (name or headline or skills)
       const keyword = query.toLowerCase();
@@ -140,6 +145,14 @@ export default function PeopleSearch({ lang }: PeopleSearchProps) {
           <div className="flex justify-center items-center h-64">
              <div className="text-xl font-bold text-gray-400 animate-pulse">Cargando perfiles...</div>
           </div>
+        ) : !query.trim() && !locationQuery.trim() && roleFilter === 'all' ? (
+          <div className="bg-white p-12 rounded-2xl shadow-sm border border-gray-100 text-center">
+             <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-uapa-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+             </div>
+             <h3 className="text-2xl font-bold text-gray-900 mb-3">Busca en tu Red Profesional</h3>
+             <p className="text-gray-500 max-w-md mx-auto text-lg">Escribe el nombre de un talento, reclutador o habilidad específica para encontrar perfiles.</p>
+          </div>
         ) : filteredPeople.length === 0 ? (
           <div className="bg-white p-12 rounded-2xl shadow-sm border border-gray-100 text-center">
             <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
@@ -149,58 +162,60 @@ export default function PeopleSearch({ lang }: PeopleSearchProps) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {filteredPeople.map(p => (
-              <div key={p.id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:border-uapa-blue hover:shadow-md transition-all duration-300 flex flex-col group relative overflow-hidden">
-                {/* Banner background to give LinkedIn feel */}
-                <div className="absolute top-0 left-0 w-full h-16 bg-uapa-blue/10"></div>
-                
-                <div className="relative flex items-center mb-4 mt-2">
-                   <div className="w-16 h-16 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm flex-shrink-0 flex items-center justify-center">
-                     {p.avatar_url ? (
-                        <img src={p.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                     ) : (
-                        <svg className="w-8 h-8 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                     )}
-                   </div>
-                   <div className="ml-4">
-                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-uapa-blue transition-colors">
-                        {p.full_name || 'Usuario Anónimo'}
-                      </h3>
-                      <p className="text-sm text-gray-500 font-medium">
-                        {p.role === 'recruiter' ? 'Reclutador / Recruiter' : 'Talento / Talent'}
-                      </p>
-                   </div>
-                </div>
-                
-                <p className="text-gray-700 font-medium mb-3 line-clamp-2 min-h-[48px]">
-                   {p.headline || 'Buscando nuevas oportunidades...'}
-                </p>
-
-                {p.location && (
-                   <span className="flex items-center text-sm text-gray-500 mb-4">
-                     <svg className="w-4 h-4 mr-1 text-uapa-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                     {p.location}
-                   </span>
-                )}
-                
-                <div className="mt-auto pt-4 border-t border-gray-100">
-                    <div className="flex flex-wrap gap-2">
-                       {p.skills && p.skills.length > 0 ? (
-                           p.skills.slice(0, 3).map(skill => (
-                               <span key={skill} className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded-md border border-gray-200">
-                                   {skill}
-                               </span>
-                           ))
+              <a href={lang === 'es' ? `/user/${p.id}` : `/${lang}/user/${p.id}`} key={p.id} className="block group">
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:border-uapa-blue hover:shadow-md transition-all duration-300 flex flex-col relative overflow-hidden h-full">
+                  {/* Banner background to give LinkedIn feel */}
+                  <div className="absolute top-0 left-0 w-full h-16 bg-uapa-blue/10"></div>
+                  
+                  <div className="relative flex items-center mb-4 mt-2">
+                     <div className="w-16 h-16 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm flex-shrink-0 flex items-center justify-center">
+                       {p.avatar_url ? (
+                          <img src={p.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                        ) : (
-                           <span className="text-xs text-gray-400 italic">No hay habilidades listadas</span>
+                          <svg className="w-8 h-8 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                        )}
-                       {p.skills && p.skills.length > 3 && (
-                           <span className="text-xs bg-gray-50 text-gray-400 px-2 py-1 rounded-md border border-gray-200">
-                               +{p.skills.length - 3}
-                           </span>
-                       )}
-                    </div>
+                     </div>
+                     <div className="ml-4">
+                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-uapa-blue transition-colors">
+                          {p.full_name || 'Usuario Anónimo'}
+                        </h3>
+                        <p className="text-sm text-gray-500 font-medium">
+                          {p.role === 'recruiter' ? 'Reclutador / Recruiter' : 'Talento / Talent'}
+                        </p>
+                     </div>
+                  </div>
+                  
+                  <p className="text-gray-700 font-medium mb-3 line-clamp-2 min-h-[48px]">
+                     {p.headline || 'Buscando nuevas oportunidades...'}
+                  </p>
+
+                  {p.location && (
+                     <span className="flex items-center text-sm text-gray-500 mb-4">
+                       <svg className="w-4 h-4 mr-1 text-uapa-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                       {p.location}
+                     </span>
+                  )}
+                  
+                  <div className="mt-auto pt-4 border-t border-gray-100">
+                      <div className="flex flex-wrap gap-2">
+                         {p.skills && p.skills.length > 0 ? (
+                             p.skills.slice(0, 3).map(skill => (
+                                 <span key={skill} className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded-md border border-gray-200">
+                                     {skill}
+                                 </span>
+                             ))
+                         ) : (
+                             <span className="text-xs text-gray-400 italic">No hay habilidades listadas</span>
+                         )}
+                         {p.skills && p.skills.length > 3 && (
+                             <span className="text-xs bg-gray-50 text-gray-400 px-2 py-1 rounded-md border border-gray-200">
+                                 +{p.skills.length - 3}
+                             </span>
+                         )}
+                      </div>
+                  </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         )}

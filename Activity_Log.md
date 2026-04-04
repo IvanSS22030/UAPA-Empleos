@@ -32,3 +32,18 @@
 - **Profile Editor Updates:** Added interactive Upwork-style cards for skills and language tags at the bottom of the user profile.
 - **PeopleSearch Component:** Created a dedicated Network people search that queries all recruiters and peers with filtering capabilities.
 - **Apply with Profile:** Updated `ApplicationForm.tsx` to include an "Apply with Profile" toggle. This enables a user with a complete profile to submit job applications without uploading a standalone PDF.
+
+## UI Tweaks & Public Profile System
+- **Navbar Spacing Fix:** Modified `Layout.astro` to decouple the navigation links from the user authentication section. Moved "Empleos" directly adjacent to the main UAPA logo.
+- **Privacy First Network Search:** Updated `PeopleSearch.tsx`. It now returns an empty array and displays a robust empty-state UI prompt if the search box is completely empty, ensuring "everyone doesn't see everyone" by default.
+## API & Backend Connectivity Update
+- **Astro SSR (Hybrid Mode):** Fixed dynamic routing bug (`[id].astro`) completely by integrating `@astrojs/node` and refactoring `astro.config.mjs` config to output server pages, allowing `[id]` profiles to be rendered on the fly.
+- **Connections & Notifications SQL:** Authored `supabase_connections_notifications.sql` containing a rigid RLS-enabled schema mirroring LinkedIn's Connect and Bell logic.
+- **Connection Mechanics:** Built `ConnectButton.tsx` to handle bi-directional "Pending", "Accept", and "Connected" states on the front-end, integrated natively into dynamic profile layouts.
+- **Real-time Notifications:** Implemented `<NotificationBell />` polling the user's unread interactions. Allows dropdown interaction and links directly to actor profiles.
+- **Chat Lockdown:** Refactored `<ChatWidget />` dependency hook `fetchConversations`. Chatting is now strictly permitted only with confirmed 1-on-1 connections.
+
+## Dynamic Recruiter Ecosystem
+- **Jobs Table:** Authored `supabase_jobs_update.sql` to shift job listings from static markdown into a relational Postgres table.
+- **Job Posting UI:** Created secure React form `JobCreateForm.tsx` within `/jobs/create` route. Only users with the `recruiter` role can view this and post jobs directly to the live feed.
+- **Dynamic Job Views:** Refactored `src/pages/jobs/[id].astro` to pull the specific job metadata from Supabase in real-time, effectively abandoning the local static `[...slug]` methodology.

@@ -13,8 +13,9 @@ interface Profile {
 }
 
 interface Conversation {
-  id: string;
+  id: string; // The conversation ID (dynamically resolved)
   otherParticipant: Profile;
+  connectionId?: string;
 }
 
 interface Message {
@@ -52,30 +53,27 @@ export default function ChatWidget({ lang }: ChatWidgetProps) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // 2. Fetch Conversations
+  // 2. Fetch Connections as Contact List
   const fetchConversations = async (userId: string) => {
     setLoading(true);
-    // Fetch conversations where user is participant 1 or 2
-    const { data: convData, error } = await supabase
-      .from('conversations')
+    
+    // Fetch accepted connections
+    const { data: connData, error } = await supabase
+      .from('connections')
       .select('*')
-      .or(`participant1_id.eq.${userId},participant2_id.eq.${userId}`);
+      .eq('status', 'accepted')
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
 
-    if (error || !convData) {
+    if (error || !connData || connData.length === 0) {
+      setConversations([]);
       setLoading(false);
       return;
     }
 
     // Extract other participant IDs
-    const otherParticipantIds = convData.map(c => 
-      c.participant1_id === userId ? c.participant2_id : c.participant1_id
+    const otherParticipantIds = connData.map(c => 
+      c.sender_id === userId ? c.receiver_id : c.sender_id
     );
-
-    if (otherParticipantIds.length === 0) {
-      setConversations([]);
-      setLoading(false);
-      return;
-    }
 
     // Fetch profiles of other participants
     const { data: profiles } = await supabase
@@ -84,17 +82,52 @@ export default function ChatWidget({ lang }: ChatWidgetProps) {
       .in('id', otherParticipantIds);
 
     if (profiles) {
-      const formattedConvs = convData.map(c => {
-        const otherId = c.participant1_id === userId ? c.participant2_id : c.participant1_id;
-        const otherProfile = profiles.find(p => p.id === otherId) || { id: otherId, full_name: 'Unknown User', avatar_url: '' };
+      const formattedConvs = connData.map(c => {
+        const otherId = c.sender_id === userId ? c.receiver_id : c.sender_id;
+        const otherProfile = profiles.find(p => p.id === otherId) || { id: otherId, full_name: 'Usuario Anónimo', avatar_url: '' };
         return {
-          id: c.id,
+          id: '', // Resolved below
+          connectionId: c.id,
           otherParticipant: otherProfile
         };
       });
       setConversations(formattedConvs);
     }
     setLoading(false);
+  };
+
+  const resolveActiveConv = async (conv: Conversation) => {
+     if (conv.id) {
+        setActiveConv(conv);
+        return;
+     }
+
+     // Try to find existing conversation
+     const { data, error } = await supabase
+        .from('conversations')
+        .select('*')
+        .or(`and(participant1_id.eq.${session.user.id},participant2_id.eq.${conv.otherParticipant.id}),and(participant1_id.eq.${conv.otherParticipant.id},participant2_id.eq.${session.user.id})`)
+        .single();
+     
+     if (data) {
+        conv.id = data.id;
+        setActiveConv({...conv});
+     } else {
+        // Create new conversation
+        const { data: newConv } = await supabase
+          .from('conversations')
+          .insert({
+             participant1_id: session.user.id,
+             participant2_id: conv.otherParticipant.id
+          })
+          .select()
+          .single();
+          
+        if (newConv) {
+           conv.id = newConv.id;
+           setActiveConv({...conv});
+        }
+     }
   };
 
   // 3. Fetch Messages for an Active Conversation
@@ -213,10 +246,10 @@ export default function ChatWidget({ lang }: ChatWidgetProps) {
                  </div>
                ) : (
                  <div className="flex flex-col">
-                   {conversations.map(conv => (
+                   {conversations.map((conv, idx) => (
                      <button 
-                       key={conv.id}
-                       onClick={() => setActiveConv(conv)}
+                       key={conv.connectionId || idx}
+                       onClick={() => resolveActiveConv(conv)}
                        className="flex items-center gap-3 p-3 hover:bg-white transition bg-transparent border-b border-gray-100 last:border-0 text-left"
                      >
                        <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">

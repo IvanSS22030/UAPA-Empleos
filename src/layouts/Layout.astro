@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { getLangFromUrl, useTranslations } from '../i18n/ui';
 import ChatWidget from '../components/ChatWidget';
+import NotificationBell from '../components/NotificationBell';
 
 interface Props {
 	title: string;
@@ -27,26 +28,34 @@ const t = useTranslations(lang);
     <header class="bg-uapa-blue shadow-md border-b-4 border-uapa-orange">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         
-        {/* Official UAPA Logo (White version for dark background) */}
-        <a href={lang === 'es' ? '/' : `/${lang}/`} class="flex items-center">
-          <img 
-            src="https://www.uapa.edu.do/wp-content/uploads/2022/06/Logo-blanco-UAPA.png" 
-            alt="UAPA Logo" 
-            class="h-12 w-auto object-contain"
-            onError="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Logo_UAPA.png/320px-Logo_UAPA.png';"
-          />
-        </a>
+        <div class="flex items-center space-x-8">
+          {/* Official UAPA Logo (White version for dark background) */}
+          <a href={lang === 'es' ? '/' : `/${lang}/`} class="flex items-center">
+            <img 
+              src="https://www.uapa.edu.do/wp-content/uploads/2022/06/Logo-blanco-UAPA.png" 
+              alt="UAPA Logo" 
+              class="h-12 w-auto object-contain"
+              onError="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Logo_UAPA.png/320px-Logo_UAPA.png';"
+            />
+          </a>
 
-        <nav class="space-x-4 font-medium flex items-center">
-          <a href={lang === 'es' ? '/jobs' : `/${lang}/jobs`} class="text-white hover:text-uapa-orange transition-colors">{t('nav.jobs')}</a>
+          <div class="hidden md:flex font-medium">
+            <a href={lang === 'es' ? '/jobs' : `/${lang}/jobs`} class="text-white hover:text-uapa-orange transition-colors px-3 py-2 rounded-md">{t('nav.jobs')}</a>
+            {/* Red link is only in profile dropdown now per request */}
+          </div>
+        </div>
+
+        <nav class="font-medium flex items-center">
           
           <div id="unauth-nav" class="space-x-4 flex items-center">
             <a href={lang === 'es' ? '/login' : `/${lang}/login`} class="text-white hover:text-uapa-orange transition-colors">{t('nav.login')}</a>
             <a href={lang === 'es' ? '/signup' : `/${lang}/signup`} class="px-5 py-2.5 bg-uapa-orange text-white rounded-lg hover:bg-orange-600 shadow-sm transition-all ml-2">{t('nav.signup')}</a>
           </div>
 
-          <div id="auth-nav" class="hidden items-center relative">
-            <button id="profile-dropdown-btn" class="flex items-center space-x-2 focus:outline-none group">
+          <div id="auth-nav" class="hidden items-center space-x-2 relative">
+            <NotificationBell client:only="react" />
+
+            <button id="profile-dropdown-btn" class="flex items-center space-x-2 focus:outline-none group ml-2">
               <div class="w-10 h-10 rounded-full border-2 border-transparent group-hover:border-uapa-orange overflow-hidden bg-white/10 flex items-center justify-center transition-colors">
                 <img id="nav-avatar" src="" class="w-full h-full object-cover hidden" alt="Avatar"/>
                 <svg id="nav-avatar-placeholder" class="w-6 h-6 text-uapa-sand" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
@@ -61,6 +70,10 @@ const t = useTranslations(lang);
               <a href={lang === 'es' ? '/network' : `/${lang}/network`} class="px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
                 <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 {lang === 'es' ? 'Red / Network' : 'Network'}
+              </a>
+              <a href={lang === 'es' ? '/jobs/create' : `/${lang}/jobs/create`} id="post-job-link" class="hidden px-4 py-2.5 text-sm font-semibold text-uapa-orange hover:bg-orange-50 items-center">
+                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                {lang === 'es' ? 'Publicar Vacante' : 'Post a Job'}
               </a>
               <a href={lang === 'es' ? '/profile' : `/${lang}/profile`} class="px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
                 <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -108,15 +121,23 @@ const t = useTranslations(lang);
           
           let name = session.user.user_metadata?.full_name;
           let avatarUrl = null;
+          let role = null;
 
-          const { data } = await supabase.from('profiles').select('full_name, avatar_url').eq('id', session.user.id).single();
+          const { data } = await supabase.from('profiles').select('full_name, avatar_url, role').eq('id', session.user.id).single();
           if (data) {
             if (!name) name = data.full_name;
             avatarUrl = data.avatar_url;
+            role = data.role;
           }
 
           if (userNameEl) {
             userNameEl.textContent = name || session.user.email?.split('@')[0] || 'Usuario';
+          }
+
+          const postJobLink = document.getElementById('post-job-link');
+          if (postJobLink && role === 'recruiter') {
+             postJobLink.classList.remove('hidden');
+             postJobLink.classList.add('flex');
           }
 
           const navAvatar = document.getElementById('nav-avatar');

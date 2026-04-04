@@ -1,0 +1,23 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import JobCreateForm from '../../components/JobCreateForm';
+import { getLangFromUrl, useTranslations } from '../../i18n/ui';
+
+export const prerender = false;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Layout title="Publicar Vacante - Uapa Empleos">
+  <div class="bg-gray-50 min-h-screen py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mb-8 text-center">
+        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Publicar un Nuevo Empleo</h1>
+        <p class="mt-2 text-lg text-gray-600">Completa la siguiente información para comenzar a recibir solicitudes del mejor talento.</p>
+      </div>
+
+      <JobCreateForm client:only="react" lang={lang} />
+    </div>
+  </div>
+</Layout>

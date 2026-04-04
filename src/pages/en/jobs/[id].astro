@@ -1,0 +1,93 @@
+---
+import { supabase } from '../../../lib/supabase';
+import Layout from '../../../layouts/Layout.astro';
+import ApplicationForm from '../../../components/ApplicationForm';
+import { getLangFromUrl, useTranslations } from '../../../i18n/ui';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// Try fetching from supabase live jobs first
+let job: any = null;
+
+if (id) {
+  const { data, error } = await supabase
+    .from('jobs')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (data) {
+    job = {
+      id: data.id,
+      title: data.title,
+      company: data.company,
+      location: data.location,
+      date_posted: data.created_at,
+      content: data.description,
+      type: data.type
+    };
+  }
+}
+
+// Support legacy static jobs temporarily if needed (fallback)
+if (!job) {
+  try {
+     const { getEntry } = await import('astro:content');
+     const entry = await getEntry('jobs', id as string);
+     if (entry) {
+        job = {
+           id: entry.id,
+           title: entry.data.title,
+           company: entry.data.company,
+           location: entry.data.location,
+           date_posted: entry.data.date_posted,
+           content: entry.body,
+           type: 'full-time'
+        };
+     }
+  } catch (e) {
+     // Ignore
+  }
+}
+
+if (!job) {
+  return Astro.redirect('/404');
+}
+---
+
+<Layout title={`${job.title} - Uapa Empleos`}>
+  {/* data-pagefind-body is standard for pagefind indexing */}
+  <article class="max-w-4xl mx-auto px-4 py-16" data-pagefind-body>
+    <header class="mb-12 border-b pb-8">
+      <h1 class="text-4xl font-extrabold text-gray-900 mb-4">{job.title}</h1>
+      <div class="flex flex-wrap text-gray-500 gap-y-2 space-x-6 text-lg">
+        <span class="font-bold text-uapa-blue">{job.company}</span>
+        <span class="hidden sm:inline">&bull;</span>
+        <span class="flex items-center text-gray-600"><svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>{job.location}</span>
+        <span class="hidden sm:inline">&bull;</span>
+        <span class="bg-gray-100 text-gray-700 px-3 py-0.5 rounded-full text-sm font-bold uppercase">{job.type}</span>
+        <span class="hidden sm:inline">&bull;</span>
+        <span>{new Date(job.date_posted).toLocaleDateString()}</span>
+      </div>
+    </header>
+
+    <div class="prose prose-indigo prose-lg max-w-none text-gray-700 whitespace-pre-wrap">
+      {job.content}
+    </div>
+
+    <div class="mt-16 bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center">
+      <h3 class="text-2xl font-bold text-gray-900 mb-2">
+        Ready to Apply?
+      </h3>
+      <p class="text-gray-500 mb-8">
+        Complete the application form below. Your resume will be securely uploaded.
+      </p>
+      {/* Interactive Application Form React Island */}
+      <ApplicationForm jobId={job.id} lang={lang} client:load />
+    </div>
+  </article>
+</Layout>
