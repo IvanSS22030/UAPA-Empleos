@@ -3,7 +3,8 @@ import { defineMiddleware } from 'astro:middleware';
 export const onRequest = defineMiddleware((context, next) => {
   const { url, request, redirect } = context;
 
-  // Language auto-detection on the home page mapping
+  // Language auto-detection on the home page mapping (Disabled per request)
+  /*
   if (url.pathname === '/') {
     const acceptLang = request.headers.get('accept-language');
     // If browser prefers English, seamlessly redirect
@@ -11,6 +12,7 @@ export const onRequest = defineMiddleware((context, next) => {
       return redirect('/en', 302);
     }
   }
+  */
 
   return next();
 });
