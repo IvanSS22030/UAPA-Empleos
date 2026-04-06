@@ -1,8 +1,8 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import SearchBar from '../components/SearchBar';
+import Layout from '../../layouts/Layout.astro';
+import SearchBar from '../../components/SearchBar';
 import { getCollection } from 'astro:content';
-import { getLangFromUrl, useTranslations } from '../i18n/ui';
+import { getLangFromUrl, useTranslations } from '../../i18n/ui';
 
 const jobs = await getCollection('jobs');
 const lang = getLangFromUrl(Astro.url);
