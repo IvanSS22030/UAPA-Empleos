@@ -91,11 +91,21 @@ export default function ApplicationForm({ jobId, lang = 'es' }: ApplicationFormP
   if (!user || userRole !== 'talent') {
     return (
       <div className="bg-yellow-50 text-yellow-800 p-6 rounded-xl border border-yellow-200 text-center max-w-xl mx-auto">
-        <h3 className="text-xl font-bold mb-2">Authentication Required</h3>
-        <p>You must be logged in as a <strong>Job Hunter (Talent)</strong> to apply for this job.</p>
+        <h3 className="text-xl font-bold mb-2">
+          {lang === 'es' ? 'Autenticación Requerida' : 'Authentication Required'}
+        </h3>
+        <p>
+          {lang === 'es' ? 'Debes iniciar sesión como ' : 'You must be logged in as a '}
+          <strong>{lang === 'es' ? 'Talento (Candidato)' : 'Job Hunter (Talent)'}</strong>
+          {lang === 'es' ? ' para poder aplicar a esta vacante.' : ' to apply for this job.'}
+        </p>
         <div className="mt-4 flex gap-4 justify-center">
-          <a href="/login" className="px-4 py-2 bg-yellow-600 text-white font-semibold rounded hover:bg-yellow-700 transition">Log In</a>
-          <a href="/signup" className="px-4 py-2 bg-yellow-100 text-yellow-800 font-semibold rounded border border-yellow-300 hover:bg-yellow-200 transition">Sign Up</a>
+          <a href={lang === 'es' ? '/login' : `/${lang}/login`} className="px-4 py-2 bg-yellow-600 text-white font-semibold rounded hover:bg-yellow-700 transition">
+            {lang === 'es' ? 'Iniciar Sesión' : 'Log In'}
+          </a>
+          <a href={lang === 'es' ? '/signup' : `/${lang}/signup`} className="px-4 py-2 bg-yellow-100 text-yellow-800 font-semibold rounded border border-yellow-300 hover:bg-yellow-200 transition">
+            {lang === 'es' ? 'Registrarse' : 'Sign Up'}
+          </a>
         </div>
       </div>
     );
